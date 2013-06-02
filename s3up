@@ -40,7 +40,8 @@ ARGV.each do |local|
   end
 
   remote.write local_path,
-    acl: :public_read
+    acl: :public_read,
+    reduced_redundancy: conf[:reduced_redundancy]
 
   puts "http://#{conf[:bucket]}/#{remote_path}"
 end

@@ -12,6 +12,11 @@
 
 :prefix: ''
 
-# Days after which files should expire.
+# Days after which files should expire. Changes to this setting are
+# retroactive, effective on the next upload.
 
 :expiration: 30
+
+# If true, store files with reduced redundancy in S3.
+
+:reduced_redundancy: false
