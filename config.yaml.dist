@@ -7,3 +7,11 @@
 # S3 bucket name (must already exist)
 
 :bucket: ''
+
+# Prefix into which images should go.
+
+:prefix: ''
+
+# Days after which images should expire.
+
+:expiration: 30
