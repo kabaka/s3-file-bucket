@@ -3,6 +3,7 @@
 require 'aws'
 require 'digest/md5'
 require 'yaml'
+require 'securerandom'
 
 include AWS
 
@@ -29,15 +30,12 @@ ARGV.each do |local|
 
   local_path = Pathname.new local
 
-  gen = Time.now.to_i.to_s(36)
+  begin
+    gen = SecureRandom.urlsafe_base64 4
 
-  remote_path = "#{conf[:prefix]}/#{gen}"
-  remote = bucket.objects[remote_path]
-
-  if remote.exists?
-    puts "** Skipped existing file #{local_path}"
-    next
-  end
+    remote_path = "#{conf[:prefix]}/#{gen}"
+    remote = bucket.objects[remote_path]
+  end while remote.exists?
 
   remote.write local_path,
     acl: :public_read,

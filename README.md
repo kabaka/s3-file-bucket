@@ -1,8 +1,9 @@
 # S3 File Bucket
 
 Upload files to S3 under a given prefix with a preconfigured expiration. Files
-are *currently* named by the current epoch in base 36, so uploading many files
-in a short time will result in files being skipped. I'll change that, soon.
+are given a pseudorandom base 64 name. Before upload, a name is generated and
+checked for existence. If it exists, it will try again. Presently, names are 6
+characters long, so collisions are unlikely and will be very infrequent.
 
 Just a note: this is obscenely simple and barely deserves its own repository.
 
