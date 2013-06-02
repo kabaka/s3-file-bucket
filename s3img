@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+require 'aws'
+require 'digest/md5'
+require 'yaml'
+
+include AWS
+
+conf = YAML::load File.open 'config.yaml'
+s3 = S3.new conf[:AWS]
+bucket = s3.buckets[conf[:bucket]]
+
+unless bucket.exists?
+  abort "bucket #{conf[:bucket]} does not exist"
+end
+
+# XXX: this is not very graceful
+bucket.lifecycle_configuration.replace do
+  add_rule "#{conf[:prefix]}/",
+    :expiration_time => conf[:expiration]
+end
+
+ARGV.each do |local|
+  if File.directory? local
+    puts "** Skipped directory #{local}"
+    next
+  end
+
+  local_path = Pathname.new local
+
+  gen = Time.now.to_i.to_s(36)
+
+  remote_path = "#{conf[:prefix]}/#{gen}"
+  remote = bucket.objects[remote_path]
+
+  if remote.exists?
+    puts "** Skipped existing file #{local_path}"
+    next
+  end
+
+  remote.write local_path,
+    acl: :public_read
+
+  puts "http://#{conf[:bucket]}/#{remote_path}"
+end
+
