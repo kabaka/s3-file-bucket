@@ -8,10 +8,10 @@
 
 :bucket: ''
 
-# Prefix into which images should go.
+# Prefix into which files should go.
 
 :prefix: ''
 
-# Days after which images should expire.
+# Days after which files should expire.
 
 :expiration: 30

@@ -6,7 +6,8 @@ require 'yaml'
 
 include AWS
 
-conf = YAML::load File.open 'config.yaml'
+conf = YAML::load File.open "#{File.expand_path(File.dirname(__FILE__))}/config.yaml"
+
 s3 = S3.new conf[:AWS]
 bucket = s3.buckets[conf[:bucket]]
 

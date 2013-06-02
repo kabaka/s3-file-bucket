@@ -12,7 +12,7 @@ my tiny Rake-based S3 web site creator.
 
 ## Usage
 
-Run `s3img` with one or more files as arguments.
+Run `s3up` with one or more files as arguments.
 
 ### Configuration
 
