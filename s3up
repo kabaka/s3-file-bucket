@@ -1,13 +1,12 @@
 #!/usr/bin/env ruby
 
 require 'aws'
-require 'digest/md5'
 require 'yaml'
 require 'securerandom'
 
 include AWS
 
-conf = YAML::load File.open "#{File.expand_path(File.dirname(__FILE__))}/config.yaml"
+conf = YAML::load_file File.join(__dir__, 'config.yaml')
 
 s3 = S3.new conf[:AWS]
 bucket = s3.buckets[conf[:bucket]]
