@@ -1,29 +1,82 @@
 #!/usr/bin/env ruby
 
-require 'aws'
+require 'aws-sdk'
 require 'yaml'
 require 'securerandom'
 
-include AWS
+include Aws
+
+def lifecycle bucket
+  @lifecycles ||= {}
+
+  @lifecycles[bucket] ||= bucket.lifecycle.rules
+end
+
+def lifecycle_match bucket, id
+  @lifecycle_matches ||= {}
+  @lifecycle_matches[bucket] ||= {}
+
+  @lifecycle_matches[bucket][id] ||= lifecycle(bucket).find do |rule|
+    rule[:id] == id
+  end
+end
+
+def remove_lifecycle_rule bucket, id
+  lifecycle(bucket).delete_if do |rule|
+    rule.id == id
+  end
+end
+
+def add_lifecycle_rule! bucket, new_rule
+  lifecycle(bucket) << new_rule
+
+  bucket.lifecycle.put lifecycle_configuration: {
+    rules: lifecycle(bucket)
+  }
+end
+
+def compare_lifecycle_rules hash, object
+  return false if hash[:id] != object.id
+  return false if hash[:expiration][:days] != object.expiration.days
+  return false if hash[:prefix] != object.prefix
+  return false if hash[:status] != object.status
+
+  true
+end
 
 conf = YAML::load_file File.join(__dir__, 'config.yaml')
 
-s3 = S3.new conf[:AWS]
-bucket = s3.buckets[conf[:bucket]]
+bucket = S3::Bucket.new conf[:bucket], region: 'us-east-1'
 
 unless bucket.exists?
-  abort "bucket #{conf[:bucket]} does not exist"
+  abort "bucket does not exist: #{conf[:bucket]}"
 end
 
-# XXX: this is not very graceful
-bucket.lifecycle_configuration.replace do
-  add_rule "#{conf[:prefix]}/",
-    :expiration_time => conf[:expiration]
+new_rule = {
+  expiration: { days: conf[:expiration] },
+  id:         "s3up_#{conf[:prefix]}",
+  prefix:     conf[:prefix],
+  status:     'Enabled'
+}
+
+match = lifecycle_match bucket, new_rule[:id]
+
+if match.nil?
+  puts 'lifecycle: no matching rule found; adding'
+
+  add_lifecycle_rule! bucket, new_rule
+elsif not compare_lifecycle_rules new_rule, match
+  puts 'lifecycle: matching rule id found with mismatched settings; replacing'
+
+  remove_lifecycle_rule bucket, new_rule[:id]
+  add_lifecycle_rule! bucket, new_rule
+
 end
 
 ARGV.each do |local|
   if File.directory? local
-    puts "** Skipped directory #{local}"
+    # XXX we could upload all files in a directory... not sure if I want that
+    warn "warning: skipping directory: #{local}"
     next
   end
 
@@ -32,13 +85,13 @@ ARGV.each do |local|
   begin
     gen = SecureRandom.urlsafe_base64 4
 
-    remote_path = "#{conf[:prefix]}/#{gen}"
-    remote = bucket.objects[remote_path]
+    remote_path = "#{conf[:prefix]}#{gen}"
+    remote = bucket.object remote_path
   end while remote.exists?
 
-  remote.write local_path,
-    acl: :public_read,
-    reduced_redundancy: conf[:reduced_redundancy]
+  remote.upload_file local_path,
+    acl: 'public-read',
+    storage_class: conf[:storage_class]
 
   puts "http://#{conf[:bucket]}/#{remote_path}"
 end

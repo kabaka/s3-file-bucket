@@ -1,22 +1,18 @@
-# Your AWS remote access credentials
-
-:AWS:
-  :access_key_id: ''
-  :secret_access_key: ''
-
 # S3 bucket name (must already exist)
 
 :bucket: ''
 
-# Prefix into which files should go.
+# Prefix into which files should go. Include the trailing slash.
 
 :prefix: ''
 
 # Days after which files should expire. Changes to this setting are
-# retroactive, effective on the next upload.
+# retroactive, effective on the next upload. If you change your prefix, the old
+# lifecycle policy will still apply to the old prefix, and this will apply to
+# the new one.
 
 :expiration: 30
 
-# If true, store files with reduced redundancy in S3.
+# AWS S3 storage class to use. May be STANDARD or REDUCED_REDUNDANCY.
 
-:reduced_redundancy: false
+:storage_class: 'REDUCED_REDUNDANCY'
