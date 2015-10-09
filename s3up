@@ -82,7 +82,14 @@ ARGV.each do |local|
 
   local_path = Pathname.new local
 
+  tries = 0
+  max_tries = 50 # this seems reasonably high ¯\_(ツ)_/¯
+
   begin
+    abort 'unable to come up with a unique object key' if tries > max_tries
+
+    tries += 1
+
     gen = SecureRandom.urlsafe_base64 4
 
     remote_path = "#{conf[:prefix]}#{gen}"
