@@ -2,9 +2,11 @@
 
 :bucket: ''
 
+
 # Prefix into which files should go. Include the trailing slash.
 
 :prefix: ''
+
 
 # Days after which files should expire. Changes to this setting are
 # retroactive, effective on the next upload. If you change your prefix, the old
@@ -13,6 +15,15 @@
 
 :expiration: 30
 
-# AWS S3 storage class to use. May be STANDARD or REDUCED_REDUNDANCY.
+
+# AWS S3 storage class to use. Must be one of:
+#
+# - STANDARD
+# - STANDARD_IA
+# - REDUCED_REDUNDANCY
+#
+# See here for information on these classes:
+#   https://aws.amazon.com/s3/storage-classes/
+#   https://aws.amazon.com/s3/reduced-redundancy/
 
 :storage_class: 'REDUCED_REDUNDANCY'
