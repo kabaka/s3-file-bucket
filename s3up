@@ -62,11 +62,11 @@ new_rule = {
 match = lifecycle_match bucket, new_rule[:id]
 
 if match.nil?
-  puts 'lifecycle: no matching rule found; adding'
+  warn 'lifecycle: no matching rule found; adding'
 
   add_lifecycle_rule! bucket, new_rule
 elsif not compare_lifecycle_rules new_rule, match
-  puts 'lifecycle: matching rule id found with mismatched settings; replacing'
+  warn 'lifecycle: matching rule id found with mismatched settings; replacing'
 
   remove_lifecycle_rule bucket, new_rule[:id]
   add_lifecycle_rule! bucket, new_rule
